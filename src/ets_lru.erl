@@ -193,6 +193,10 @@ handle_call(Msg, _From, St) ->
     {stop, {invalid_call, Msg}, {invalid_call, Msg}, St}.
 
 
+handle_cast({insert, Key, Val}, St) ->
+    ok = insert_int(Key, Val, St),
+    {noreply, St, 0};
+
 handle_cast({accessed, Key}, St) ->
     accessed(Key, St),
     {noreply, St, 0};
