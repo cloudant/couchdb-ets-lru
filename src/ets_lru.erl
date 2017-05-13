@@ -164,20 +164,7 @@ handle_call({match, KeySpec, ValueSpec}, _From, St) ->
     {reply, Values, St, 0};
 
 handle_call({insert, Key, Val}, _From, St) ->
-    NewATime = erlang:now(),
-    Pattern = #entry{key=Key, atime='$1', _='_'},
-    case ets:match(St#st.objects, Pattern) of
-        [[ATime]] ->
-            Update = {#entry.val, Val},
-            true = ets:update_element(St#st.objects, Key, Update),
-            true = ets:delete(St#st.atimes, ATime),
-            true = ets:insert(St#st.atimes, {NewATime, Key});
-        [] ->
-            Entry = #entry{key=Key, val=Val, atime=NewATime, ctime=NewATime},
-            true = ets:insert(St#st.objects, Entry),
-            true = ets:insert(St#st.atimes, {NewATime, Key}),
-            true = ets:insert(St#st.ctimes, {NewATime, Key})
-    end,
+    ok = insert_int(Key, Val, St),
     {reply, ok, St, 0};
 
 handle_call({remove, Key}, _From, St) ->
@@ -228,6 +215,23 @@ handle_info(Msg, St) ->
 code_change(_OldVsn, St, _Extra) ->
     {ok, St}.
 
+
+insert_int(Key, Val, St) ->
+    NewATime = erlang:now(),
+    Pattern = #entry{key=Key, atime='$1', _='_'},
+    case ets:match(St#st.objects, Pattern) of
+        [[ATime]] ->
+            Update = {#entry.val, Val},
+            true = ets:update_element(St#st.objects, Key, Update),
+            true = ets:delete(St#st.atimes, ATime),
+            true = ets:insert(St#st.atimes, {NewATime, Key});
+        [] ->
+            Entry = #entry{key=Key, val=Val, atime=NewATime, ctime=NewATime},
+            true = ets:insert(St#st.objects, Entry),
+            true = ets:insert(St#st.atimes, {NewATime, Key}),
+            true = ets:insert(St#st.ctimes, {NewATime, Key})
+    end,
+    ok.
 
 accessed(Key, St) ->
     Pattern = #entry{key=Key, atime='$1', _='_'},
