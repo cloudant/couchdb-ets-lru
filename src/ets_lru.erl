@@ -20,6 +20,7 @@
     stop/1,
 
     insert/3,
+    insert_abcast/3,
     lookup/2,
     match/3,
     match_object/3,
@@ -76,6 +77,10 @@ lookup(LRU, Key) ->
 
 insert(LRU, Key, Val) ->
     gen_server:call(LRU, {insert, Key, Val}).
+
+
+insert_abcast(LRU, Key, Val) ->
+    gen_server:abcast(LRU, {insert, Key, Val}).
 
 
 remove(LRU, Key) ->
